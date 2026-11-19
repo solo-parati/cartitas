@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crea tu frasco de cartitas</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;background:#1a0829;color:#fff;padding:20px;display:flex;justify-content:center}
+  main{width:100%;max-width:480px}
+  h1{color:#fbcfe8;text-align:center}
+  label{display:block;margin:14px 0 6px;font-weight:600}
+  input[type=text],select,textarea{width:100%;padding:12px;border-radius:12px;border:2px solid #be185d;background:#2b0f3f;color:#fff;font-size:1rem;font-family:inherit}
+  textarea{min-height:70px;resize:vertical}
+  .carta{background:#2b0f3f;border-radius:14px;padding:12px;margin:10px 0}
+  .carta input{margin-bottom:8px}
+  button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:14px;font-size:1.05rem;font-weight:700;cursor:pointer;background:#ec4899;color:#fff}
+  button.sec{background:#3b1456;border:2px solid #be185d}
+  button.x{width:auto;padding:6px 12px;margin:0;font-size:.85rem}
+  #res{display:none;margin-top:18px}
+  small{color:#d8b4fe}
+</style></head>
+<body><main>
+  <h1>💌 Crea tu frasco de cartitas</h1>
+  <label for="p">¿Para quién es?</label><input type="text" id="p" maxlength="40" placeholder="Ej: María">
+  <label for="t">Título</label><input type="text" id="t" maxlength="60" value="Mi frasco de cartitas">
+  <label for="c">Color</label>
+  <select id="c"><option value="rosa">Rosa</option><option value="morado">Morado</option><option value="azul">Azul</option><option value="verde">Verde</option></select>
+  <label>Cartitas (máximo 12)</label><div id="lista"></div>
+  <button id="mas" class="sec">+ Agregar carta</button>
+  <button id="gen">Generar link</button>
+  <div id="res">
+    <input type="text" id="link" readonly>
+    <button id="copiar">Copiar link</button>
+    <button id="wa" class="sec">Enviar por WhatsApp</button>
+    <button id="ver" class="sec">Ver cómo queda</button>
+    <small>Los links solo funcionan para otras personas cuando esta página está publicada en internet.</small>
+  </div>
+</main>
+<script>
+const DEF=[["Abre cuando estés triste","Recuerda que todo pasa y que siempre voy a estar contigo. Respira hondo, tú puedes con esto. 💜"],
+["Abre cuando necesites reírte","Eres la única persona capaz de hacerme reír hasta cuando no quiero. Sonríe, que te queda perfecto. 😄"],
+["Abre cuando no puedas dormir","Cierra los ojos, respira lento y piensa en algo bonito. Mañana será un mejor día. 🌙"],
+["Abre cuando dudes de ti","Vales mucho más de lo que crees. Yo siempre creo en ti. ✨"],
+["Abre cuando me extrañes","Aunque no estemos juntos, estoy pensando en ti. Pronto nos vemos. 💌"]];
+const $=id=>document.getElementById(id), lista=$("lista");
+function agrega(t="",m=""){
+  if(lista.children.length>=12){alert("Máximo 12 cartas");return;}
+  const d=document.createElement("div"); d.className="carta";
+  const a=document.createElement("input"); a.type="text"; a.maxLength=60; a.placeholder="Ej: Abre cuando estés triste"; a.value=t;
+  const b=document.createElement("textarea"); b.maxLength=300; b.placeholder="Tu mensaje"; b.value=m;
+  const x=document.createElement("button"); x.className="x sec"; x.textContent="Quitar"; x.onclick=()=>d.remove();
+  d.append(a,b,x); lista.append(d);
+}
+DEF.forEach(([t,m])=>agrega(t,m)); $("mas").onclick=()=>agrega();
+const lim=s=>s.replace(/[|~]/g," ").trim();
+$("gen").onclick=()=>{
+  const cs=[...lista.children].map(d=>[lim(d.querySelector("input").value),lim(d.querySelector("textarea").value)]).filter(c=>c[0]);
+  if(!cs.length){alert("Escribe al menos una carta con título");return;}
+  const u=new URL("index.html",location.href), p=$("p").value.trim(), t=$("t").value.trim();
+  if(p)u.searchParams.set("p",p); if(t)u.searchParams.set("t",t);
+  u.searchParams.set("c",$("c").value);
+  u.searchParams.set("m",cs.map(c=>c[0]+"~"+c[1]).join("|"));
+  $("link").value=u.href; $("res").style.display="block";
+};
+$("copiar").onclick=async()=>{try{await navigator.clipboard.writeText($("link").value)}catch(e){$("link").select();document.execCommand("copy")}$("copiar").textContent="¡Copiado!";};
+$("wa").onclick=()=>open("https://wa.me/?text="+encodeURIComponent("💌 Tengo algo para ti: "+$("link").value));
+$("ver").onclick=()=>open($("link").value);
+</script></body></html>
